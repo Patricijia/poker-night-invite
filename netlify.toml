@@ -4,3 +4,9 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/seats"
+  to = "/.netlify/functions/seats"
+  status = 200
+  force = true

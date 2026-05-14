@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Poker Night — Birthday Invite</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<meta name="theme-color" content="#c8102e" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,500&display=swap" rel="stylesheet">
@@ -44,54 +46,10 @@
 <div class="balloons" id="balloons" aria-hidden="true"></div>
 
 <header class="hero">
-  <div class="brand">
-    <svg viewBox="0 0 220 220" class="brand-logo" role="img" aria-label="Poker Night logo">
-      <defs>
-        <linearGradient id="logo-gold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"  stop-color="#f5d76e"/>
-          <stop offset="50%" stop-color="#d4af37"/>
-          <stop offset="100%" stop-color="#a8862a"/>
-        </linearGradient>
-        <radialGradient id="logo-chip" cx="50%" cy="35%" r="65%">
-          <stop offset="0%"  stop-color="#3a0810"/>
-          <stop offset="55%" stop-color="#c8102e"/>
-          <stop offset="100%" stop-color="#5e0712"/>
-        </radialGradient>
-        <path id="brand-arc-top" d="M 30 110 A 80 80 0 0 1 190 110"/>
-        <path id="brand-arc-bot" d="M 30 110 A 80 80 0 0 0 190 110"/>
-      </defs>
-
-      <circle cx="110" cy="110" r="105" fill="none" stroke="url(#logo-gold)" stroke-width="1.5" opacity="0.5"/>
-      <circle cx="110" cy="110" r="95"  fill="url(#logo-chip)" stroke="url(#logo-gold)" stroke-width="2.5"/>
-      <circle cx="110" cy="110" r="84"  fill="none" stroke="#f4e4c1" stroke-width="2" stroke-dasharray="8 6" opacity="0.85"/>
-      <circle cx="110" cy="110" r="70"  fill="#0a0a0a"/>
-      <circle cx="110" cy="110" r="70"  fill="none" stroke="url(#logo-gold)" stroke-width="1.2"/>
-
-      <g transform="translate(110 115)">
-        <g transform="rotate(-22) translate(-13 -36)">
-          <rect x="0" y="0" width="26" height="38" rx="3" fill="#fff" stroke="#222" stroke-width="0.6"/>
-          <text x="13" y="14" text-anchor="middle" fill="#000" font-size="10" font-weight="900" font-family="Cinzel, serif">K</text>
-          <text x="13" y="30" text-anchor="middle" fill="#000" font-size="14">♠</text>
-        </g>
-        <g transform="rotate(0) translate(-13 -40)">
-          <rect x="0" y="0" width="26" height="38" rx="3" fill="#fff" stroke="#222" stroke-width="0.6"/>
-          <text x="13" y="14" text-anchor="middle" fill="#c8102e" font-size="10" font-weight="900" font-family="Cinzel, serif">A</text>
-          <text x="13" y="30" text-anchor="middle" fill="#c8102e" font-size="14">♥</text>
-        </g>
-        <g transform="rotate(22) translate(-13 -36)">
-          <rect x="0" y="0" width="26" height="38" rx="3" fill="#fff" stroke="#222" stroke-width="0.6"/>
-          <text x="13" y="14" text-anchor="middle" fill="#000" font-size="10" font-weight="900" font-family="Cinzel, serif">Q</text>
-          <text x="13" y="30" text-anchor="middle" fill="#000" font-size="14">♣</text>
-        </g>
-      </g>
-
-      <text fill="url(#logo-gold)" font-family="Cinzel, serif" font-size="12.5" font-weight="900" letter-spacing="5">
-        <textPath href="#brand-arc-top" startOffset="50%" text-anchor="middle">POKER NIGHT</textPath>
-      </text>
-      <text fill="url(#logo-gold)" font-family="Cinzel, serif" font-size="8" font-weight="700" letter-spacing="4" opacity="0.85">
-        <textPath href="#brand-arc-bot" startOffset="50%" text-anchor="middle">EST. 2026 &spades; WEST EDGE</textPath>
-      </text>
-    </svg>
+  <div class="chip-stack">
+    <div class="chip chip-red"></div>
+    <div class="chip chip-black"></div>
+    <div class="chip chip-gold"></div>
   </div>
   <p class="kicker">You are cordially invited to</p>
   <h1 class="title">

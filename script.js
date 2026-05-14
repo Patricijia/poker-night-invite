@@ -258,6 +258,7 @@ let communityCards = [];
 let useRemote = true;
 let pollTimer = null;
 let modalOpen = false;
+let pendingSave = false;
 const playerId = getOrCreatePlayerId();
 
 function getOrCreatePlayerId() {
@@ -415,7 +416,7 @@ function escapeHTML(s) {
 
 // ----- Sync -----
 async function syncFromServer() {
-  if (!useRemote || modalOpen) return;
+  if (!useRemote || modalOpen || pendingSave) return;
   try {
     const remote = await apiGetSeats();
     const localJson = JSON.stringify(seats);
@@ -559,8 +560,9 @@ async function confirmSeat() {
   burstConfetti();
   closeSeatModal();
 
-  // Push to server
+  // Push to server (pause polling so it can't overwrite our optimistic state mid-flight)
   if (useRemote) {
+    pendingSave = true;
     try {
       const updated = await apiPostSeat({
         seatNum: claimedSeat,
@@ -577,9 +579,12 @@ async function confirmSeat() {
       saveLocal();
       renderSeats();
       setSyncStatus(true);
-    } catch {
+    } catch (err) {
+      console.warn("Save failed, falling back to local-only", err);
       useRemote = false;
       setSyncStatus(false);
+    } finally {
+      pendingSave = false;
     }
   }
 
