@@ -6,59 +6,93 @@ export default async (req) => {
   const store = getStore("poker-night");
 
   try {
+    if (req.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+    }
+
     if (req.method === "GET") {
       const seats = (await store.get(KEY, { type: "json" })) || {};
-      return Response.json(seats, { headers: corsHeaders() });
+      return Response.json(seats, {
+        headers: corsHeaders(),
+      });
     }
 
     if (req.method === "POST") {
       const body = await req.json();
       const { seatNum, name, cards, avatar, playerId, previousSeat } = body || {};
 
-      if (!seatNum || !name || !Array.isArray(cards) || !playerId) {
-        return new Response("Bad request", { status: 400, headers: corsHeaders() });
+      const seatNumber = Number(seatNum);
+
+      if (
+        !Number.isInteger(seatNumber) ||
+        seatNumber < 1 ||
+        seatNumber > 8 ||
+        !name ||
+        !Array.isArray(cards) ||
+        !playerId
+      ) {
+        return new Response("Bad request", {
+          status: 400,
+          headers: corsHeaders(),
+        });
       }
-      if (seatNum < 1 || seatNum > 8) {
-        return new Response("Invalid seat", { status: 400, headers: corsHeaders() });
-      }
+
+      const seatKey = String(seatNumber);
+      const previousSeatKey = previousSeat ? String(previousSeat) : null;
 
       const seats = (await store.get(KEY, { type: "json" })) || {};
 
-      // Free previous seat if this player is moving
-      if (previousSeat && seats[previousSeat]?.playerId === playerId) {
-        delete seats[previousSeat];
+      // If this player was already sitting somewhere else, remove old seat.
+      if (previousSeatKey && seats[previousSeatKey]?.playerId === playerId) {
+        delete seats[previousSeatKey];
       }
 
-      seats[seatNum] = {
+      seats[seatKey] = {
         name: String(name).slice(0, 40),
         cards,
         avatar: avatar && typeof avatar === "object" ? avatar : null,
-        playerId,
+        playerId: String(playerId),
         claimedAt: Date.now(),
       };
 
       await store.setJSON(KEY, seats);
-      return Response.json(seats, { headers: corsHeaders() });
+
+      return Response.json(seats, {
+        headers: corsHeaders(),
+      });
     }
 
     if (req.method === "DELETE") {
       const body = await req.json();
       const { seatNum, playerId } = body || {};
+
+      const seatKey = String(seatNum);
       const seats = (await store.get(KEY, { type: "json" })) || {};
-      if (seats[seatNum]?.playerId === playerId) {
-        delete seats[seatNum];
+
+      if (seats[seatKey]?.playerId === String(playerId)) {
+        delete seats[seatKey];
         await store.setJSON(KEY, seats);
       }
-      return Response.json(seats, { headers: corsHeaders() });
+
+      return Response.json(seats, {
+        headers: corsHeaders(),
+      });
     }
 
-    if (req.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders() });
-    }
-
-    return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
+    return new Response("Method not allowed", {
+      status: 405,
+      headers: corsHeaders(),
+    });
   } catch (err) {
-    return new Response(`Error: ${err.message}`, { status: 500, headers: corsHeaders() });
+    console.error(err);
+
+    return new Response(`Error: ${err.message}`, {
+      status: 500,
+      headers: corsHeaders(),
+    });
   }
 };
 
