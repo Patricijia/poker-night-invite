@@ -3,7 +3,7 @@ import { getStore } from "@netlify/blobs";
 const KEY = "all-seats";
 
 export default async (req) => {
-  const store = getStore("poker-night");
+  const store = getStore({ name: "poker-night", consistency: "strong" });
 
   try {
     if (req.method === "GET") {
