@@ -6,9 +6,11 @@ const SUITS = [
   { sym: "♣", name: "clubs",    color: "black" },
   { sym: "♦", name: "diamonds", color: "red"   },
 ];
+
 const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
 // ===================== Avatar system =====================
+
 const AVATAR_OPTIONS = {
   skin: [
     { id: "pale",   label: "Pale",   fill: "#f5dcc3" },
@@ -73,6 +75,7 @@ const AVATAR_FEATURES = ["skin", "hair", "hairColor", "hat", "glasses", "mouth",
 
 function randomAvatar() {
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)].id;
+
   return {
     skin:      pick(AVATAR_OPTIONS.skin),
     hair:      pick(AVATAR_OPTIONS.hair),
@@ -109,9 +112,10 @@ function buildAvatarSVG(av = randomAvatar()) {
 
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
-  let r = Math.max(0, Math.min(255, ((n >> 16) & 0xff) + amt));
-  let g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
-  let b = Math.max(0, Math.min(255, (n & 0xff) + amt));
+  const r = Math.max(0, Math.min(255, ((n >> 16) & 0xff) + amt));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
+  const b = Math.max(0, Math.min(255, (n & 0xff) + amt));
+
   return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
 }
 
@@ -150,12 +154,18 @@ function renderHairFront(hair, color) {
 }
 
 const OPAQUE_SHADES = new Set([
-  "sunglasses", "wayfarer", "blackround", "blackaviator",
-  "mirror", "wrap", "blackoversize",
+  "sunglasses",
+  "wayfarer",
+  "blackround",
+  "blackaviator",
+  "mirror",
+  "wrap",
+  "blackoversize",
 ]);
 
 function renderEyes(glasses) {
   if (OPAQUE_SHADES.has(glasses)) return "";
+
   return `
     <g class="avatar-eyes">
       <ellipse cx="40" cy="52" rx="2.4" ry="3.2" fill="#1a1a1a"/>
@@ -310,9 +320,10 @@ const STORAGE_KEY = "pokerNightSeats";
 const PLAYER_ID_KEY = "pokerNightPlayerId";
 const MY_SEAT_KEY = "pokerNightMySeat";
 const API_URL = "/api/seats";
-const POLL_MS = 5000;
+const POLL_MS = 1500;
 
 // ----- State -----
+
 let seats = {};
 let mySeat = parseInt(localStorage.getItem(MY_SEAT_KEY) || "0", 10);
 let pendingSeat = 0;
@@ -324,46 +335,70 @@ let useRemote = true;
 let pollTimer = null;
 let modalOpen = false;
 let pendingSave = false;
+
 const playerId = getOrCreatePlayerId();
 
 function getOrCreatePlayerId() {
   let id = localStorage.getItem(PLAYER_ID_KEY);
+
   if (!id) {
     id = "p_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
     localStorage.setItem(PLAYER_ID_KEY, id);
   }
+
   return id;
 }
 
 // ----- Deck helpers -----
+
 function freshDeck() {
   const d = [];
-  for (const r of RANKS) for (const s of SUITS) d.push({ rank: r, suit: s });
+
+  for (const r of RANKS) {
+    for (const s of SUITS) {
+      d.push({ rank: r, suit: s });
+    }
+  }
+
   for (let i = d.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [d[i], d[j]] = [d[j], d[i]];
   }
+
   return d;
 }
+
 function drawCard() {
-  if (deck.length === 0) deck = freshDeck();
+  if (deck.length === 0) {
+    deck = freshDeck();
+  }
+
   return deck.pop();
 }
 
 // ----- Persistence: local fallback -----
+
 function loadLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+  } catch {
+    return {};
+  }
 }
+
 function saveLocal() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(seats));
-  if (mySeat) localStorage.setItem(MY_SEAT_KEY, String(mySeat));
-  else localStorage.removeItem(MY_SEAT_KEY);
+
+  if (mySeat) {
+    localStorage.setItem(MY_SEAT_KEY, String(mySeat));
+  } else {
+    localStorage.removeItem(MY_SEAT_KEY);
+  }
 }
 
 // ----- API client -----
+
 async function apiGetSeats() {
   const res = await fetch(API_URL, {
     method: "GET",
@@ -414,13 +449,16 @@ async function apiDeleteSeat(payload) {
 function setSyncStatus(online) {
   const ind = document.getElementById("syncIndicator");
   if (!ind) return;
+
   ind.classList.toggle("offline", !online);
   ind.querySelector(".sync-label").textContent = online ? "Live" : "Local";
 }
 
 // ----- Card rendering -----
+
 function buildCardFace(card) {
   const colorClass = card.suit.color === "red" ? "red" : "";
+
   return `
     <div class="card-back"></div>
     <div class="card-face ${colorClass}">
@@ -431,6 +469,7 @@ function buildCardFace(card) {
 }
 
 // ----- Seat rendering -----
+
 function renderSeats() {
   document.querySelectorAll(".seat").forEach(seatEl => {
     const seatNum = parseInt(seatEl.dataset.seat, 10);
@@ -454,8 +493,10 @@ function renderSeats() {
       holeCards.forEach((hc, idx) => {
         const card = data.cards?.[idx];
         if (!card) return;
+
         const wasFlipped = hc.classList.contains("flipped");
         hc.innerHTML = buildCardFace(card);
+
         if (!wasFlipped) {
           setTimeout(() => hc.classList.add("flipped"), 150 + idx * 120);
         } else {
@@ -465,18 +506,21 @@ function renderSeats() {
     } else {
       chairName.textContent = "Open Seat";
       chairAvatar.innerHTML = `<span class="chair-empty">${seatNum}</span>`;
+
       holeCards.forEach(hc => {
         hc.classList.remove("flipped");
         hc.innerHTML = `<div class="card-back"></div>`;
       });
     }
   });
+
   renderRoster();
 }
 
 function renderRoster() {
   const ol = document.getElementById("roster");
   const empty = document.getElementById("rosterEmpty");
+
   if (!ol || !empty) return;
 
   const entries = Object.entries(seats)
@@ -488,14 +532,17 @@ function renderRoster() {
     ol.innerHTML = "";
     return;
   }
+
   empty.classList.add("hidden");
 
   const suits = ["♠", "♥", "♣", "♦"];
+
   ol.innerHTML = entries.map((e, i) => {
     const mine = e.playerId === playerId || e.seatNum === mySeat;
     const avatarHTML = e.avatar
       ? buildAvatarSVG(e.avatar)
       : `<span class="roster-seatnum">${e.seatNum}</span>`;
+
     return `
       <li class="roster-item ${mine ? "mine" : ""}">
         <span class="roster-avatar">${avatarHTML}</span>
@@ -507,31 +554,41 @@ function renderRoster() {
 
 function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
   })[c]);
 }
 
 // ----- Sync -----
+
 async function syncFromServer() {
-  // Keep retrying remote sync. If the first request fails, we do not want
-  // the app to be permanently stuck in local-only mode.
   if (modalOpen || pendingSave) return;
+
   try {
-    const remote = await apiGetSeats();
+    const remote = (await apiGetSeats()) || {};
     const localJson = JSON.stringify(seats);
     const remoteJson = JSON.stringify(remote);
+
     if (localJson !== remoteJson) {
       seats = remote;
-      // Reconcile mySeat: if my playerId is on a seat, that's mine
+
       const mineEntry = Object.entries(seats).find(([, v]) => v.playerId === playerId);
       mySeat = mineEntry ? parseInt(mineEntry[0], 10) : 0;
+
       saveLocal();
       renderSeats();
     }
+
+    useRemote = true;
     setSyncStatus(true);
   } catch (err) {
-    console.error("Remote sync failed; keeping local view and retrying:", err);
-    useRemote = false;
+    console.warn("Remote sync failed; will retry:", err);
+
+    // Do not set useRemote = false here.
+    // Otherwise the app stops checking the server forever.
     setSyncStatus(false);
   }
 }
@@ -540,23 +597,30 @@ function startPolling() {
   stopPolling();
   pollTimer = setInterval(syncFromServer, POLL_MS);
 }
+
 function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
 }
 
 // ----- Seat claiming -----
+
 function openSeatModal(seatNum) {
   pendingSeat = seatNum;
   modalOpen = true;
+
   document.getElementById("modalSeatNum").textContent = seatNum;
+
   const input = document.getElementById("nameInput");
 
-  // Determine initial state
   let existing = null;
+
   if (seats[seatNum]?.playerId === playerId) {
     existing = seats[seatNum];
   } else if (mySeat && seats[mySeat]?.playerId === playerId) {
-    existing = seats[mySeat]; // moving from another seat — keep my name/avatar
+    existing = seats[mySeat];
   }
 
   if (existing) {
@@ -595,13 +659,16 @@ function renderCustomizer() {
     mouth:     "Mouth",
     lipColor:  "Lip Color",
   };
+
   const wrap = document.getElementById("customizer");
   if (!wrap) return;
 
   wrap.innerHTML = AVATAR_FEATURES.map(feat => {
     const opt = getOption(feat, currentAvatar[feat]);
     const swatch = (feat === "skin" || feat === "hairColor" || feat === "lipColor")
-      ? `<span class="cust-swatch" style="background:${opt.fill}"></span>` : "";
+      ? `<span class="cust-swatch" style="background:${opt.fill}"></span>`
+      : "";
+
     return `
       <div class="cust-row" data-feat="${feat}">
         <span class="cust-label">${labels[feat]}</span>
@@ -619,9 +686,13 @@ function renderCustomizer() {
       const idx = options.findIndex(o => o.id === currentAvatar[feat]);
       const dir = btn.classList.contains("cust-next") ? 1 : -1;
       const next = options[(idx + dir + options.length) % options.length];
+
       currentAvatar[feat] = next.id;
+
       const swatch = (feat === "skin" || feat === "hairColor" || feat === "lipColor")
-        ? `<span class="cust-swatch" style="background:${next.fill}"></span>` : "";
+        ? `<span class="cust-swatch" style="background:${next.fill}"></span>`
+        : "";
+
       row.querySelector(".cust-value").innerHTML = `${swatch}${next.label}`;
       renderAvatarPreview();
     });
@@ -636,10 +707,12 @@ function closeSeatModal() {
 
 async function confirmSeat() {
   const name = document.getElementById("nameInput").value.trim();
+
   if (!name) {
     document.getElementById("nameInput").focus();
     return;
   }
+
   if (!pendingSeat) return;
 
   const previousSeat = mySeat && mySeat !== pendingSeat ? mySeat : 0;
@@ -647,55 +720,65 @@ async function confirmSeat() {
   const avatar = { ...currentAvatar };
   const newEntry = { name, cards, avatar, playerId, claimedAt: Date.now() };
 
-  // Optimistic local update
-  if (previousSeat) delete seats[previousSeat];
+  if (previousSeat) {
+    delete seats[previousSeat];
+  }
+
   seats[pendingSeat] = newEntry;
+
   const claimedSeat = pendingSeat;
   mySeat = claimedSeat;
+
   saveLocal();
   renderSeats();
   burstConfetti();
   closeSeatModal();
 
-  // Push to server (pause polling so it can't overwrite our optimistic state mid-flight)
-  // Always try to save remotely. If the site briefly went offline earlier,
-  // this lets it recover instead of staying local-only forever.
   pendingSave = true;
+
   try {
-      const updated = await apiPostSeat({
-        seatNum: claimedSeat,
-        name,
-        cards,
-        avatar,
-        playerId,
-        previousSeat: previousSeat || undefined,
-      });
-      seats = updated;
-      // Reconcile mySeat from server response
-      const mineEntry = Object.entries(seats).find(([, v]) => v.playerId === playerId);
-      mySeat = mineEntry ? parseInt(mineEntry[0], 10) : claimedSeat;
-      saveLocal();
-      renderSeats();
-      useRemote = true;
-      setSyncStatus(true);
-    } catch (err) {
-      console.warn("Remote save failed; seat is saved only on this device until sync recovers:", err);
-      useRemote = false;
-      setSyncStatus(false);
-    } finally {
-      pendingSave = false;
-    }
+    const updated = await apiPostSeat({
+      seatNum: claimedSeat,
+      name,
+      cards,
+      avatar,
+      playerId,
+      previousSeat: previousSeat || undefined,
+    });
+
+    seats = updated || {};
+
+    const mineEntry = Object.entries(seats).find(([, v]) => v.playerId === playerId);
+    mySeat = mineEntry ? parseInt(mineEntry[0], 10) : claimedSeat;
+
+    saveLocal();
+    renderSeats();
+
+    useRemote = true;
+    setSyncStatus(true);
+  } catch (err) {
+    console.warn("Save failed; keeping local view and retrying remote sync:", err);
+
+    // Keep this user's optimistic local save visible,
+    // but keep polling so remote can recover.
+    setSyncStatus(false);
+  } finally {
+    pendingSave = false;
+  }
 
   setTimeout(() => showReveal(claimedSeat), 900);
 }
 
 // ----- Reveal modal -----
+
 function showReveal(seatNum) {
   const data = seats[seatNum];
   if (!data) return;
 
   modalOpen = true;
+
   document.getElementById("revealName").textContent = `${data.name} — Seat ${seatNum}`;
+
   const cardsWrap = document.getElementById("revealCards");
   cardsWrap.innerHTML = "";
 
@@ -713,26 +796,33 @@ function showReveal(seatNum) {
 
 function describeHand(cards) {
   const [a, b] = cards;
+
   if (a.rank === b.rank) return `♠ Pocket ${a.rank}s — A premium hand`;
   if (a.suit.name === b.suit.name) return `♥ Suited ${a.rank}-${b.rank} — Flush potential`;
-  const isHigh = c => ["A","K","Q","J","10"].includes(c.rank);
+
+  const isHigh = c => ["A", "K", "Q", "J", "10"].includes(c.rank);
+
   if (isHigh(a) && isHigh(b)) return `♦ ${a.rank}-${b.rank} offsuit — High cards`;
+
   return `♣ ${a.rank}-${b.rank} — Play your luck`;
 }
 
 // ----- Community cards -----
+
 function dealCommunity() {
   const cards = document.querySelectorAll(".community");
   const btn = document.getElementById("dealBtn");
 
   if (communityRevealed === 0) {
     communityCards = [];
+
     for (let i = 0; i < 3; i++) {
       const card = drawCard();
       communityCards.push(card);
       cards[i].innerHTML = buildCardFace(card);
       setTimeout(() => cards[i].classList.add("flipped"), 100 + i * 200);
     }
+
     communityRevealed = 3;
     btn.textContent = "Deal the Turn";
   } else if (communityRevealed === 3) {
@@ -740,6 +830,7 @@ function dealCommunity() {
     communityCards.push(card);
     cards[3].innerHTML = buildCardFace(card);
     setTimeout(() => cards[3].classList.add("flipped"), 100);
+
     communityRevealed = 4;
     btn.textContent = "Deal the River";
   } else if (communityRevealed === 4) {
@@ -747,14 +838,17 @@ function dealCommunity() {
     communityCards.push(card);
     cards[4].innerHTML = buildCardFace(card);
     setTimeout(() => cards[4].classList.add("flipped"), 100);
+
     communityRevealed = 5;
     btn.textContent = "Reshuffle";
+
     setTimeout(showShowdown, 1300);
   } else {
     cards.forEach(c => {
       c.classList.remove("flipped");
       c.innerHTML = `<div class="card-back"></div>`;
     });
+
     communityRevealed = 0;
     communityCards = [];
     deck = freshDeck();
@@ -763,24 +857,63 @@ function dealCommunity() {
 }
 
 // ===================== Poker hand evaluation =====================
-const RANK_VAL = { "2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"J":11,"Q":12,"K":13,"A":14 };
-const RANK_WORD = { 2:"Two",3:"Three",4:"Four",5:"Five",6:"Six",7:"Seven",8:"Eight",9:"Nine",10:"Ten",11:"Jack",12:"Queen",13:"King",14:"Ace" };
+
+const RANK_VAL = {
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "10": 10,
+  "J": 11,
+  "Q": 12,
+  "K": 13,
+  "A": 14,
+};
+
+const RANK_WORD = {
+  2: "Two",
+  3: "Three",
+  4: "Four",
+  5: "Five",
+  6: "Six",
+  7: "Seven",
+  8: "Eight",
+  9: "Nine",
+  10: "Ten",
+  11: "Jack",
+  12: "Queen",
+  13: "King",
+  14: "Ace",
+};
+
 function rankPlural(v) {
   const w = RANK_WORD[v];
+
   if (v === 6) return "Sixes";
+
   return w + "s";
 }
 
 function combinations5of7(arr) {
-  // 21 combinations of 5 from 7
   const result = [];
   const n = arr.length;
-  for (let a = 0; a < n - 4; a++)
-   for (let b = a+1; b < n - 3; b++)
-    for (let c = b+1; c < n - 2; c++)
-     for (let d = c+1; d < n - 1; d++)
-      for (let e = d+1; e < n; e++)
-        result.push([arr[a], arr[b], arr[c], arr[d], arr[e]]);
+
+  for (let a = 0; a < n - 4; a++) {
+    for (let b = a + 1; b < n - 3; b++) {
+      for (let c = b + 1; c < n - 2; c++) {
+        for (let d = c + 1; d < n - 1; d++) {
+          for (let e = d + 1; e < n; e++) {
+            result.push([arr[a], arr[b], arr[c], arr[d], arr[e]]);
+          }
+        }
+      }
+    }
+  }
+
   return result;
 }
 
@@ -789,57 +922,131 @@ function scoreFive(five) {
   const suits = five.map(c => c.suit.name);
   const flush = suits.every(s => s === suits[0]);
 
-  // Straight detection (incl. wheel A-2-3-4-5)
   const unique = [...new Set(values)].sort((a, b) => b - a);
+
   let straightHigh = 0;
+
   if (unique.length === 5) {
-    if (unique[0] - unique[4] === 4) straightHigh = unique[0];
-    else if (unique[0] === 14 && unique[1] === 5 && unique[2] === 4 && unique[3] === 3 && unique[4] === 2) straightHigh = 5;
+    if (unique[0] - unique[4] === 4) {
+      straightHigh = unique[0];
+    } else if (
+      unique[0] === 14 &&
+      unique[1] === 5 &&
+      unique[2] === 4 &&
+      unique[3] === 3 &&
+      unique[4] === 2
+    ) {
+      straightHigh = 5;
+    }
   }
+
   const straight = straightHigh > 0;
 
-  // Group by count
   const counts = {};
   values.forEach(v => counts[v] = (counts[v] || 0) + 1);
+
   const groups = Object.entries(counts)
     .map(([v, c]) => ({ value: +v, count: c }))
     .sort((a, b) => b.count - a.count || b.value - a.value);
 
-  if (flush && straightHigh === 14) return { rank: 9, name: "Royal Flush",     kickers: [14] };
-  if (flush && straight)             return { rank: 8, name: "Straight Flush",  kickers: [straightHigh] };
-  if (groups[0].count === 4)         return { rank: 7, name: `Four ${rankPlural(groups[0].value)}`, kickers: [groups[0].value, groups[1]?.value || 0] };
-  if (groups[0].count === 3 && groups[1]?.count >= 2)
-                                     return { rank: 6, name: `Full House, ${rankPlural(groups[0].value)} over ${rankPlural(groups[1].value)}`, kickers: [groups[0].value, groups[1].value] };
-  if (flush)                         return { rank: 5, name: "Flush",          kickers: values };
-  if (straight)                      return { rank: 4, name: straightHigh === 5 ? "Straight, Wheel" : `Straight to the ${RANK_WORD[straightHigh]}`, kickers: [straightHigh] };
-  if (groups[0].count === 3)         return { rank: 3, name: `Three ${rankPlural(groups[0].value)}`, kickers: [groups[0].value, ...values.filter(v => v !== groups[0].value)] };
-  if (groups[0].count === 2 && groups[1]?.count === 2)
-                                     return { rank: 2, name: `Two Pair, ${rankPlural(groups[0].value)} and ${rankPlural(groups[1].value)}`, kickers: [groups[0].value, groups[1].value, groups[2].value] };
-  if (groups[0].count === 2)         return { rank: 1, name: `Pair of ${rankPlural(groups[0].value)}`, kickers: [groups[0].value, ...values.filter(v => v !== groups[0].value)] };
-  return                                    { rank: 0, name: `${RANK_WORD[values[0]]} High`, kickers: values };
+  if (flush && straightHigh === 14) {
+    return { rank: 9, name: "Royal Flush", kickers: [14] };
+  }
+
+  if (flush && straight) {
+    return { rank: 8, name: "Straight Flush", kickers: [straightHigh] };
+  }
+
+  if (groups[0].count === 4) {
+    return {
+      rank: 7,
+      name: `Four ${rankPlural(groups[0].value)}`,
+      kickers: [groups[0].value, groups[1]?.value || 0],
+    };
+  }
+
+  if (groups[0].count === 3 && groups[1]?.count >= 2) {
+    return {
+      rank: 6,
+      name: `Full House, ${rankPlural(groups[0].value)} over ${rankPlural(groups[1].value)}`,
+      kickers: [groups[0].value, groups[1].value],
+    };
+  }
+
+  if (flush) {
+    return { rank: 5, name: "Flush", kickers: values };
+  }
+
+  if (straight) {
+    return {
+      rank: 4,
+      name: straightHigh === 5 ? "Straight, Wheel" : `Straight to the ${RANK_WORD[straightHigh]}`,
+      kickers: [straightHigh],
+    };
+  }
+
+  if (groups[0].count === 3) {
+    return {
+      rank: 3,
+      name: `Three ${rankPlural(groups[0].value)}`,
+      kickers: [groups[0].value, ...values.filter(v => v !== groups[0].value)],
+    };
+  }
+
+  if (groups[0].count === 2 && groups[1]?.count === 2) {
+    return {
+      rank: 2,
+      name: `Two Pair, ${rankPlural(groups[0].value)} and ${rankPlural(groups[1].value)}`,
+      kickers: [groups[0].value, groups[1].value, groups[2].value],
+    };
+  }
+
+  if (groups[0].count === 2) {
+    return {
+      rank: 1,
+      name: `Pair of ${rankPlural(groups[0].value)}`,
+      kickers: [groups[0].value, ...values.filter(v => v !== groups[0].value)],
+    };
+  }
+
+  return {
+    rank: 0,
+    name: `${RANK_WORD[values[0]]} High`,
+    kickers: values,
+  };
 }
 
 function bestHand(sevenCards) {
   let best = null;
+
   for (const combo of combinations5of7(sevenCards)) {
     const s = scoreFive(combo);
-    if (!best || compareScore(s, best) > 0) best = { ...s, cards: combo };
+
+    if (!best || compareScore(s, best) > 0) {
+      best = { ...s, cards: combo };
+    }
   }
+
   return best;
 }
 
 function compareScore(a, b) {
   if (a.rank !== b.rank) return a.rank - b.rank;
+
   const len = Math.max(a.kickers.length, b.kickers.length);
+
   for (let i = 0; i < len; i++) {
     const av = a.kickers[i] || 0;
     const bv = b.kickers[i] || 0;
+
     if (av !== bv) return av - bv;
   }
+
   return 0;
 }
 
 // ===================== Showdown =====================
+
 function showShowdown() {
   if (communityCards.length !== 5) return;
 
@@ -863,26 +1070,33 @@ function showShowdown() {
   box.classList.remove("royal", "premium");
   winnerAvatar.innerHTML = "";
 
-  // If no players are seated, show the board's best hand
   if (players.length === 0) {
     const score = scoreFive(communityCards);
+
     banner.textContent = "The Board";
     winnerHand.textContent = score.name;
     winnerName.textContent = "Community cards only";
     winnerUsing.textContent = "Pull up a seat to play next round";
+
     renderShowdownCards(winnerCards, communityCards);
+
     listEl.innerHTML = "";
-    if (score.rank === 9) box.classList.add("royal");
-    else if (score.rank >= 7) box.classList.add("premium");
+
+    if (score.rank === 9) {
+      box.classList.add("royal");
+    } else if (score.rank >= 7) {
+      box.classList.add("premium");
+    }
+
     openShowdownModal();
     return;
   }
 
-  // Evaluate each player
   const evaluated = players.map(p => ({
     ...p,
     best: bestHand([...p.cards, ...communityCards]),
   }));
+
   evaluated.sort((a, b) => compareScore(b.best, a.best));
 
   const top = evaluated[0];
@@ -890,17 +1104,26 @@ function showShowdown() {
 
   banner.textContent = top.best.rank === 9 ? "Royal Flush!" : "The Showdown";
   winnerHand.textContent = top.best.name;
+
   winnerName.textContent = ties.length > 1
     ? `Split pot: ${ties.map(t => `${t.name} (Seat ${t.seatNum})`).join(", ")}`
     : `${top.name} — Seat ${top.seatNum}`;
-  if (top.avatar) winnerAvatar.innerHTML = buildAvatarSVG(top.avatar);
+
+  if (top.avatar) {
+    winnerAvatar.innerHTML = buildAvatarSVG(top.avatar);
+  }
+
   renderShowdownCards(winnerCards, top.best.cards);
+
   winnerUsing.textContent = `Using ${countHoleCardsUsed(top)} of ${top.name}'s hole cards`;
 
-  // Other players list
   const others = evaluated.slice(ties.length);
-  listEl.innerHTML = others.map((p, i) => {
-    const av = p.avatar ? buildAvatarSVG(p.avatar) : `<span class="showdown-rank">${p.seatNum}</span>`;
+
+  listEl.innerHTML = others.map(p => {
+    const av = p.avatar
+      ? buildAvatarSVG(p.avatar)
+      : `<span class="showdown-rank">${p.seatNum}</span>`;
+
     return `
       <li class="showdown-item">
         <span class="showdown-item-avatar">${av}</span>
@@ -909,14 +1132,17 @@ function showShowdown() {
       </li>`;
   }).join("");
 
-  if (top.best.rank === 9) box.classList.add("royal");
-  else if (top.best.rank >= 6) box.classList.add("premium");
+  if (top.best.rank === 9) {
+    box.classList.add("royal");
+  } else if (top.best.rank >= 6) {
+    box.classList.add("premium");
+  }
 
   openShowdownModal();
 
-  // Celebration for premium hands
   if (top.best.rank >= 6) {
     burstConfetti();
+
     if (top.best.rank === 9) {
       setTimeout(burstConfetti, 600);
       setTimeout(burstConfetti, 1200);
@@ -927,11 +1153,13 @@ function showShowdown() {
 function countHoleCardsUsed(player) {
   const holeSet = new Set(player.cards.map(c => `${c.rank}-${c.suit.name}`));
   const used = player.best.cards.filter(c => holeSet.has(`${c.rank}-${c.suit.name}`)).length;
+
   return used;
 }
 
 function renderShowdownCards(wrap, cards) {
   wrap.innerHTML = "";
+
   cards.forEach((card, idx) => {
     const el = document.createElement("div");
     el.className = "card community";
@@ -951,7 +1179,8 @@ function closeShowdownModal() {
   modalOpen = false;
 }
 
-// ----- Confetti (gold-heavy) -----
+// ----- Confetti -----
+
 function burstConfetti() {
   const palette = [
     { color: "#d4af37", weight: 5, class: "gold" },
@@ -961,52 +1190,69 @@ function burstConfetti() {
     { color: "#0a0a0a", weight: 2, class: "" },
     { color: "#f4e4c1", weight: 1, class: "" },
   ];
+
   const pool = [];
+
   palette.forEach(p => {
-    for (let i = 0; i < p.weight; i++) pool.push(p);
+    for (let i = 0; i < p.weight; i++) {
+      pool.push(p);
+    }
   });
 
   const count = isPhone ? 45 : 80;
+
   for (let i = 0; i < count; i++) {
     const c = document.createElement("div");
     const p = pool[Math.floor(Math.random() * pool.length)];
+
     c.className = `confetti ${p.class}`;
-    if (!p.class) c.style.background = p.color;
+
+    if (!p.class) {
+      c.style.background = p.color;
+    }
 
     const angle = Math.random() * Math.PI * 2;
     const dist = 200 + Math.random() * 360;
+
     c.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
     c.style.setProperty("--dy", `${Math.sin(angle) * dist + 250}px`);
     c.style.setProperty("--dur", `${1.6 + Math.random() * 1.4}s`);
     c.style.animationDelay = `${Math.random() * 0.3}s`;
 
-    // Random starting offset around the screen center
     c.style.top = `${48 + Math.random() * 4}%`;
     c.style.left = `${48 + Math.random() * 4}%`;
+
     document.body.appendChild(c);
+
     setTimeout(() => c.remove(), 3500);
   }
 
-  // A burst of slow golden stars rising
   const starCount = isPhone ? 10 : 18;
+
   for (let i = 0; i < starCount; i++) {
     const s = document.createElement("div");
     s.className = "confetti star";
+
     const dx = (Math.random() - 0.5) * 400;
+
     s.style.setProperty("--dx", `${dx}px`);
     s.style.setProperty("--dy", `${-300 - Math.random() * 200}px`);
     s.style.setProperty("--dur", `${2 + Math.random() * 1.5}s`);
     s.style.animationDelay = `${Math.random() * 0.4}s`;
     s.style.top = `${50 + Math.random() * 6}%`;
     s.style.left = `${48 + Math.random() * 4}%`;
+
     document.body.appendChild(s);
+
     setTimeout(() => s.remove(), 3800);
   }
 }
 
 // ===================== Balloons =====================
+
 const BALLOON_COLORS = ["red", "black"];
 const isPhone = matchMedia("(max-width: 700px)").matches;
+
 const BALLOON_POSITIONS = isPhone
   ? [10, 28, 46, 66, 86]
   : [6, 16, 27, 38, 49, 60, 71, 82, 93];
@@ -1014,6 +1260,7 @@ const BALLOON_POSITIONS = isPhone
 function balloonSVG(color) {
   const grad = color === "red" ? "grad-balloon-red" : "grad-balloon-black";
   const knot = color === "red" ? "#3d0710" : "#000";
+
   return `
     <svg viewBox="0 0 80 140" class="balloon-svg" aria-hidden="true">
       <ellipse cx="40" cy="48" rx="32" ry="42" fill="url(#${grad})"/>
@@ -1029,6 +1276,7 @@ function balloonSVG(color) {
 
 function createBalloon(color, opts = {}) {
   const el = document.createElement("button");
+
   el.type = "button";
   el.className = `balloon balloon-${color}`;
   el.setAttribute("aria-label", "Pop balloon");
@@ -1041,11 +1289,11 @@ function createBalloon(color, opts = {}) {
   const bobDur = 1.8 + Math.random() * 1.6;
   const bobDel = -Math.random() * 2;
 
-  el.style.setProperty("--x",         `${x}%`);
-  el.style.setProperty("--dur",       `${dur}s`);
-  el.style.setProperty("--delay",     `${delay}s`);
-  el.style.setProperty("--drift",     `${drift}px`);
-  el.style.setProperty("--bob-dur",   `${bobDur}s`);
+  el.style.setProperty("--x", `${x}%`);
+  el.style.setProperty("--dur", `${dur}s`);
+  el.style.setProperty("--delay", `${delay}s`);
+  el.style.setProperty("--drift", `${drift}px`);
+  el.style.setProperty("--bob-dur", `${bobDur}s`);
   el.style.setProperty("--bob-delay", `${bobDel}s`);
 
   el.innerHTML = `
@@ -1054,17 +1302,19 @@ function createBalloon(color, opts = {}) {
     </div>`;
 
   el.addEventListener("click", () => popBalloon(el));
+
   return el;
 }
 
 function popBalloon(el) {
   if (el.classList.contains("popped")) return;
+
   el.classList.add("popped");
 
   const svg = el.querySelector(".balloon-svg");
   const r = svg.getBoundingClientRect();
   const cx = r.left + r.width / 2;
-  const cy = r.top  + r.height / 2;
+  const cy = r.top + r.height / 2;
   const color = el.dataset.color;
 
   spawnPopShards(cx, cy, color);
@@ -1072,11 +1322,13 @@ function popBalloon(el) {
 
   setTimeout(() => {
     el.remove();
-    // Respawn so the air always has balloons
+
     setTimeout(() => {
       const container = document.getElementById("balloons");
       if (!container) return;
+
       const newColor = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
+
       container.appendChild(createBalloon(newColor, {
         x: 5 + Math.random() * 90,
         dur: 22 + Math.random() * 12,
@@ -1090,38 +1342,50 @@ function popBalloon(el) {
 function spawnPopShards(x, y, color) {
   const palette = color === "red"
     ? ["#ff506a", "#c8102e", "#5e0712", "#ffbbc6", "#8b0a1f"]
-    : ["#3a3a3a", "#1a1a1a", "#000",    "#555",    "#0f0f0f"];
+    : ["#3a3a3a", "#1a1a1a", "#000", "#555", "#0f0f0f"];
 
   const count = isPhone ? 10 : 16;
+
   for (let i = 0; i < count; i++) {
     const s = document.createElement("div");
+
     s.className = "balloon-shard";
     s.style.left = `${x}px`;
-    s.style.top  = `${y}px`;
+    s.style.top = `${y}px`;
     s.style.background = palette[i % palette.length];
+
     const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
-    const dist  = 90 + Math.random() * 140;
+    const dist = 90 + Math.random() * 140;
+
     s.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
     s.style.setProperty("--dy", `${Math.sin(angle) * dist + 120}px`);
     s.style.setProperty("--dur", `${0.9 + Math.random() * 0.6}s`);
+
     document.body.appendChild(s);
+
     setTimeout(() => s.remove(), 1800);
   }
 }
 
 function spawnPopGlitter(x, y) {
   const count = isPhone ? 8 : 14;
+
   for (let i = 0; i < count; i++) {
     const g = document.createElement("div");
+
     g.className = "balloon-glitter";
     g.style.left = `${x}px`;
-    g.style.top  = `${y}px`;
+    g.style.top = `${y}px`;
+
     const angle = Math.random() * Math.PI * 2;
-    const dist  = 50 + Math.random() * 110;
+    const dist = 50 + Math.random() * 110;
+
     g.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
     g.style.setProperty("--dy", `${Math.sin(angle) * dist - 30}px`);
     g.style.setProperty("--dur", `${1.0 + Math.random() * 0.9}s`);
+
     document.body.appendChild(g);
+
     setTimeout(() => g.remove(), 2100);
   }
 }
@@ -1129,27 +1393,33 @@ function spawnPopGlitter(x, y) {
 function initBalloons() {
   const container = document.getElementById("balloons");
   if (!container) return;
+
   BALLOON_POSITIONS.forEach((x, i) => {
     const color = BALLOON_COLORS[i % 2];
-    const dur   = 22 + Math.random() * 12;
+    const dur = 22 + Math.random() * 12;
     const delay = -Math.random() * dur;
     const drift = (Math.random() - 0.5) * 90;
+
     container.appendChild(createBalloon(color, { x, dur, delay, drift }));
   });
 }
 
 function initBalloonInteraction() {
-  if (matchMedia("(hover: none)").matches) return; // skip on touch-only devices
+  if (matchMedia("(hover: none)").matches) return;
 
-  let mouseX = -9999, mouseY = -9999;
+  let mouseX = -9999;
+  let mouseY = -9999;
   let lastMove = 0;
   let raf = null;
 
-  window.addEventListener("mousemove", (e) => {
+  window.addEventListener("mousemove", e => {
     mouseX = e.clientX;
     mouseY = e.clientY;
     lastMove = performance.now();
-    if (!raf) raf = requestAnimationFrame(loop);
+
+    if (!raf) {
+      raf = requestAnimationFrame(loop);
+    }
   }, { passive: true });
 
   function loop() {
@@ -1160,10 +1430,12 @@ function initBalloonInteraction() {
     balloons.forEach(b => {
       const shift = b.firstElementChild;
       if (!shift) return;
+
       const r = b.getBoundingClientRect();
       if (r.width === 0) return;
+
       const bx = r.left + r.width / 2;
-      const by = r.top  + r.height / 2;
+      const by = r.top + r.height / 2;
       const dx = bx - mouseX;
       const dy = by - mouseY;
       const dist = Math.hypot(dx, dy);
@@ -1172,6 +1444,7 @@ function initBalloonInteraction() {
         const force = (150 - dist) / 150;
         const nx = (dx / dist) * force * 32;
         const ny = (dy / dist) * force * 32;
+
         shift.style.transform = `translate(${nx}px, ${ny}px)`;
         anyShifted = true;
       } else if (shift.style.transform) {
@@ -1188,57 +1461,70 @@ function initBalloonInteraction() {
 }
 
 // ----- Wire up -----
+
 document.addEventListener("DOMContentLoaded", async () => {
   initBalloons();
-  // Initial load
+
   seats = loadLocal();
   renderSeats();
 
-  // Try remote
   try {
-    seats = await apiGetSeats();
+    seats = (await apiGetSeats()) || {};
+
     const mineEntry = Object.entries(seats).find(([, v]) => v.playerId === playerId);
     mySeat = mineEntry ? parseInt(mineEntry[0], 10) : 0;
+
     saveLocal();
     renderSeats();
+
+    useRemote = true;
     setSyncStatus(true);
-    startPolling();
   } catch (err) {
-    console.error("Initial remote load failed; using local view and retrying sync:", err);
-    useRemote = false;
+    console.warn("Initial remote load failed; using local view and retrying sync:", err);
+
+    // Keep local view, but continue polling.
     setSyncStatus(false);
   }
+
   startPolling();
 
-  // Pause polling when tab hidden, resume when visible
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stopPolling();
-    else { syncFromServer(); startPolling(); }
+    if (document.hidden) {
+      stopPolling();
+    } else {
+      syncFromServer();
+      startPolling();
+    }
   });
 
   document.querySelectorAll(".seat .chair").forEach(btn => {
     btn.addEventListener("click", () => {
       const seatEl = btn.closest(".seat");
       const seatNum = parseInt(seatEl.dataset.seat, 10);
+
       if (seats[seatNum]?.playerId === playerId) {
         showReveal(seatNum);
         return;
       }
+
       openSeatModal(seatNum);
     });
   });
 
   document.getElementById("confirmBtn").addEventListener("click", confirmSeat);
   document.getElementById("cancelBtn").addEventListener("click", closeSeatModal);
+
   document.getElementById("randomizeBtn").addEventListener("click", () => {
     currentAvatar = randomAvatar();
     renderAvatarPreview();
     renderCustomizer();
   });
+
   document.getElementById("nameInput").addEventListener("keydown", e => {
     if (e.key === "Enter") confirmSeat();
     if (e.key === "Escape") closeSeatModal();
   });
+
   document.querySelector("#seatModal .modal-backdrop").addEventListener("click", closeSeatModal);
 
   document.getElementById("dealBtn").addEventListener("click", dealCommunity);
@@ -1247,6 +1533,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("revealModal").classList.remove("open");
     modalOpen = false;
   });
+
   document.querySelector("#revealModal .modal-backdrop").addEventListener("click", () => {
     document.getElementById("revealModal").classList.remove("open");
     modalOpen = false;
