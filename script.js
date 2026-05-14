@@ -8,6 +8,239 @@ const SUITS = [
 ];
 const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
+// ===================== Avatar system =====================
+const AVATAR_OPTIONS = {
+  skin: [
+    { id: "pale",   label: "Pale",   fill: "#f5dcc3" },
+    { id: "light",  label: "Light",  fill: "#e8b896" },
+    { id: "medium", label: "Medium", fill: "#c08b5f" },
+    { id: "tan",    label: "Tan",    fill: "#9a6635" },
+    { id: "deep",   label: "Deep",   fill: "#6e3f1f" },
+  ],
+  hair: [
+    { id: "bald",    label: "Bald" },
+    { id: "short",   label: "Short" },
+    { id: "long",    label: "Long" },
+    { id: "topknot", label: "Top Knot" },
+    { id: "curly",   label: "Curly" },
+    { id: "mohawk",  label: "Mohawk" },
+  ],
+  hairColor: [
+    { id: "black",  label: "Black",   fill: "#1a1a1a" },
+    { id: "brown",  label: "Brown",   fill: "#6b3410" },
+    { id: "blonde", label: "Blonde",  fill: "#d4a574" },
+    { id: "red",    label: "Red",     fill: "#c8102e" },
+    { id: "silver", label: "Silver",  fill: "#cccccc" },
+    { id: "gold",   label: "Gold",    fill: "#d4af37" },
+  ],
+  hat: [
+    { id: "none",    label: "None" },
+    { id: "visor",   label: "Visor" },
+    { id: "fedora",  label: "Fedora" },
+    { id: "tophat",  label: "Top Hat" },
+    { id: "crown",   label: "Crown" },
+    { id: "cowboy",  label: "Cowboy" },
+  ],
+  glasses: [
+    { id: "none",        label: "None" },
+    { id: "sunglasses",  label: "Sunglasses" },
+    { id: "round",       label: "Round" },
+    { id: "aviator",     label: "Aviator" },
+  ],
+  mouth: [
+    { id: "smile",   label: "Smile" },
+    { id: "smirk",   label: "Smirk" },
+    { id: "neutral", label: "Neutral" },
+    { id: "grin",    label: "Grin" },
+    { id: "pout",    label: "Pout" },
+  ],
+  lipColor: [
+    { id: "natural", label: "Natural", fill: "#a04a3a" },
+    { id: "red",     label: "Red",     fill: "#c8102e" },
+    { id: "berry",   label: "Berry",   fill: "#6b1a2e" },
+    { id: "nude",    label: "Nude",    fill: "#c98870" },
+    { id: "gold",    label: "Gold",    fill: "#d4af37" },
+  ],
+};
+
+const AVATAR_FEATURES = ["skin", "hair", "hairColor", "hat", "glasses", "mouth", "lipColor"];
+
+function randomAvatar() {
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)].id;
+  return {
+    skin:      pick(AVATAR_OPTIONS.skin),
+    hair:      pick(AVATAR_OPTIONS.hair),
+    hairColor: pick(AVATAR_OPTIONS.hairColor),
+    hat:       pick(AVATAR_OPTIONS.hat),
+    glasses:   pick(AVATAR_OPTIONS.glasses),
+    mouth:     pick(AVATAR_OPTIONS.mouth),
+    lipColor:  pick(AVATAR_OPTIONS.lipColor),
+  };
+}
+
+function getOption(category, id) {
+  return AVATAR_OPTIONS[category].find(o => o.id === id) || AVATAR_OPTIONS[category][0];
+}
+
+function buildAvatarSVG(av = randomAvatar()) {
+  const skin = getOption("skin", av.skin).fill;
+  const hairFill = getOption("hairColor", av.hairColor).fill;
+  const lip = getOption("lipColor", av.lipColor).fill;
+
+  return `
+    <svg viewBox="0 0 100 100" class="avatar-svg" xmlns="http://www.w3.org/2000/svg">
+      ${renderHairBack(av.hair, hairFill)}
+      <circle cx="50" cy="54" r="30" fill="${skin}"/>
+      <ellipse cx="38" cy="58" rx="4" ry="2.5" fill="${shade(skin, -8)}" opacity="0.5"/>
+      <ellipse cx="62" cy="58" rx="4" ry="2.5" fill="${shade(skin, -8)}" opacity="0.5"/>
+      ${renderEyes(av.glasses)}
+      ${renderMouth(av.mouth, lip)}
+      ${renderHairFront(av.hair, hairFill)}
+      ${renderGlasses(av.glasses)}
+      ${renderHat(av.hat)}
+    </svg>`;
+}
+
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = Math.max(0, Math.min(255, ((n >> 16) & 0xff) + amt));
+  let g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
+  let b = Math.max(0, Math.min(255, (n & 0xff) + amt));
+  return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
+}
+
+function renderHairBack(hair, color) {
+  switch (hair) {
+    case "long":
+      return `<path d="M 18 56 Q 18 28 50 26 Q 82 28 82 56 L 82 80 Q 50 90 18 80 Z" fill="${color}"/>`;
+    case "topknot":
+      return `<circle cx="50" cy="20" r="9" fill="${color}"/><rect x="46" y="20" width="8" height="6" fill="${color}"/>`;
+    default:
+      return "";
+  }
+}
+
+function renderHairFront(hair, color) {
+  switch (hair) {
+    case "short":
+      return `<path d="M 20 50 Q 22 28 50 26 Q 78 28 80 50 Q 78 38 50 34 Q 22 38 20 50 Z" fill="${color}"/>`;
+    case "long":
+      return `<path d="M 20 52 Q 22 26 50 24 Q 78 26 80 52 Q 78 38 50 32 Q 22 38 20 52 Z" fill="${color}"/>`;
+    case "topknot":
+      return `<path d="M 26 46 Q 30 30 50 30 Q 70 30 74 46 Q 68 38 50 36 Q 32 38 26 46 Z" fill="${color}"/>`;
+    case "curly":
+      return `<g fill="${color}">
+        <circle cx="26" cy="36" r="8"/><circle cx="38" cy="28" r="9"/>
+        <circle cx="50" cy="25" r="9"/><circle cx="62" cy="28" r="9"/>
+        <circle cx="74" cy="36" r="8"/><circle cx="80" cy="48" r="7"/>
+        <circle cx="20" cy="48" r="7"/>
+      </g>`;
+    case "mohawk":
+      return `<path d="M 44 14 Q 50 8 56 14 L 58 36 Q 50 34 42 36 Z" fill="${color}"/>`;
+    case "bald":
+    default:
+      return "";
+  }
+}
+
+function renderEyes(glasses) {
+  if (glasses === "sunglasses") return "";
+  return `
+    <g class="avatar-eyes">
+      <ellipse cx="40" cy="52" rx="2.4" ry="3.2" fill="#1a1a1a"/>
+      <ellipse cx="60" cy="52" rx="2.4" ry="3.2" fill="#1a1a1a"/>
+      <ellipse cx="40.6" cy="51.2" rx="0.7" ry="0.9" fill="#fff"/>
+      <ellipse cx="60.6" cy="51.2" rx="0.7" ry="0.9" fill="#fff"/>
+      <path d="M 35 47 Q 40 44 45 47" stroke="#1a1a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M 55 47 Q 60 44 65 47" stroke="#1a1a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    </g>`;
+}
+
+function renderMouth(mouth, lip) {
+  switch (mouth) {
+    case "smile":
+      return `<path d="M 40 68 Q 50 75 60 68" stroke="${lip}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    case "smirk":
+      return `<path d="M 41 70 Q 50 71 60 65" stroke="${lip}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    case "neutral":
+      return `<line x1="42" y1="69" x2="58" y2="69" stroke="${lip}" stroke-width="2.2" stroke-linecap="round"/>`;
+    case "grin":
+      return `<path d="M 38 66 Q 50 76 62 66 Q 50 72 38 66 Z" fill="${lip}"/>
+              <path d="M 41 68 Q 50 71 59 68" stroke="#fff" stroke-width="1.1" fill="none" opacity="0.7"/>`;
+    case "pout":
+      return `<ellipse cx="50" cy="69" rx="5" ry="3" fill="${lip}"/>`;
+    default:
+      return "";
+  }
+}
+
+function renderGlasses(glasses) {
+  switch (glasses) {
+    case "sunglasses":
+      return `
+        <g class="avatar-shades">
+          <rect x="28" y="45" width="20" height="11" rx="3" fill="#0a0a0a" stroke="#d4af37" stroke-width="1"/>
+          <rect x="52" y="45" width="20" height="11" rx="3" fill="#0a0a0a" stroke="#d4af37" stroke-width="1"/>
+          <line x1="48" y1="50.5" x2="52" y2="50.5" stroke="#d4af37" stroke-width="1.5"/>
+          <rect x="32" y="46.5" width="4" height="2" fill="#fff" opacity="0.4"/>
+          <rect x="56" y="46.5" width="4" height="2" fill="#fff" opacity="0.4"/>
+        </g>`;
+    case "round":
+      return `
+        <g>
+          <circle cx="40" cy="52" r="7" fill="rgba(255,255,255,0.12)" stroke="#d4af37" stroke-width="1.5"/>
+          <circle cx="60" cy="52" r="7" fill="rgba(255,255,255,0.12)" stroke="#d4af37" stroke-width="1.5"/>
+          <line x1="47" y1="52" x2="53" y2="52" stroke="#d4af37" stroke-width="1.5"/>
+        </g>`;
+    case "aviator":
+      return `
+        <g>
+          <path d="M 33 48 Q 32 58 41 58 Q 49 58 48 48 Z" fill="rgba(0,0,0,0.55)" stroke="#d4af37" stroke-width="1"/>
+          <path d="M 52 48 Q 51 58 59 58 Q 68 58 67 48 Z" fill="rgba(0,0,0,0.55)" stroke="#d4af37" stroke-width="1"/>
+          <line x1="48" y1="50" x2="52" y2="50" stroke="#d4af37" stroke-width="1.5"/>
+        </g>`;
+    default:
+      return "";
+  }
+}
+
+function renderHat(hat) {
+  switch (hat) {
+    case "visor":
+      return `
+        <path d="M 14 34 Q 50 24 86 34 Q 86 37 80 37 L 20 37 Q 14 37 14 34 Z" fill="#0d3b1f" stroke="#d4af37" stroke-width="1"/>
+        <rect x="36" y="22" width="28" height="8" rx="4" fill="#0d3b1f" stroke="#d4af37" stroke-width="0.8"/>`;
+    case "fedora":
+      return `
+        <ellipse cx="50" cy="32" rx="37" ry="6" fill="#0a0a0a"/>
+        <path d="M 30 30 Q 30 10 50 10 Q 70 10 70 30 Z" fill="#0a0a0a"/>
+        <rect x="30" y="24" width="40" height="3" fill="#c8102e"/>
+        <circle cx="68" cy="25.5" r="1.2" fill="#d4af37"/>`;
+    case "tophat":
+      return `
+        <ellipse cx="50" cy="34" rx="38" ry="5" fill="#000"/>
+        <rect x="34" y="-2" width="32" height="34" fill="#000"/>
+        <rect x="34" y="24" width="32" height="4" fill="#d4af37"/>
+        <rect x="34" y="-2" width="32" height="3" fill="#1a1a1a"/>`;
+    case "crown":
+      return `
+        <path d="M 23 30 L 27 12 L 37 22 L 46 8 L 50 22 L 54 8 L 63 22 L 73 12 L 77 30 Z"
+              fill="#d4af37" stroke="#a8862a" stroke-width="1.2"/>
+        <circle cx="27" cy="15" r="1.6" fill="#c8102e"/>
+        <circle cx="50" cy="13" r="1.8" fill="#c8102e"/>
+        <circle cx="73" cy="15" r="1.6" fill="#c8102e"/>
+        <rect x="23" y="28" width="54" height="3" fill="#a8862a"/>`;
+    case "cowboy":
+      return `
+        <ellipse cx="50" cy="32" rx="42" ry="5" fill="#6b3410"/>
+        <path d="M 32 28 Q 32 14 50 14 Q 68 14 68 28 Z" fill="#6b3410"/>
+        <path d="M 50 14 L 48 28 L 52 28 Z" fill="#3d1f08"/>
+        <rect x="32" y="24" width="36" height="2.5" fill="#3d1f08"/>`;
+    default:
+      return "";
+  }
+}
+
 const STORAGE_KEY = "pokerNightSeats";
 const PLAYER_ID_KEY = "pokerNightPlayerId";
 const MY_SEAT_KEY = "pokerNightMySeat";
@@ -18,6 +251,7 @@ const POLL_MS = 5000;
 let seats = {};
 let mySeat = parseInt(localStorage.getItem(MY_SEAT_KEY) || "0", 10);
 let pendingSeat = 0;
+let currentAvatar = randomAvatar();
 let deck = freshDeck();
 let communityRevealed = 0;
 let communityCards = [];
@@ -104,6 +338,7 @@ function renderSeats() {
     const seatNum = parseInt(seatEl.dataset.seat, 10);
     const data = seats[seatNum];
     const chairName = seatEl.querySelector(".chair-name");
+    const chairAvatar = seatEl.querySelector(".chair-avatar");
     const holeCards = seatEl.querySelectorAll(".hole-card");
 
     seatEl.classList.remove("taken", "mine");
@@ -111,6 +346,9 @@ function renderSeats() {
     if (data) {
       seatEl.classList.add("taken");
       chairName.textContent = data.name;
+      chairAvatar.innerHTML = data.avatar
+        ? buildAvatarSVG(data.avatar)
+        : `<span class="chair-empty">${seatNum}</span>`;
 
       const isMe = data.playerId === playerId || seatNum === mySeat;
       if (isMe) seatEl.classList.add("mine");
@@ -128,6 +366,7 @@ function renderSeats() {
       });
     } else {
       chairName.textContent = "Open Seat";
+      chairAvatar.innerHTML = `<span class="chair-empty">${seatNum}</span>`;
       holeCards.forEach(hc => {
         hc.classList.remove("flipped");
         hc.innerHTML = `<div class="card-back"></div>`;
@@ -156,10 +395,13 @@ function renderRoster() {
   const suits = ["♠", "♥", "♣", "♦"];
   ol.innerHTML = entries.map((e, i) => {
     const mine = e.playerId === playerId || e.seatNum === mySeat;
+    const avatarHTML = e.avatar
+      ? buildAvatarSVG(e.avatar)
+      : `<span class="roster-seatnum">${e.seatNum}</span>`;
     return `
       <li class="roster-item ${mine ? "mine" : ""}">
-        <span class="roster-seat">${e.seatNum}</span>
-        <span class="roster-name">${escapeHTML(e.name)}</span>
+        <span class="roster-avatar">${avatarHTML}</span>
+        <span class="roster-name">${escapeHTML(e.name)} <span class="roster-seat-tag">Seat ${e.seatNum}</span></span>
         <span class="roster-suit">${suits[i % 4]}</span>
       </li>`;
   }).join("");
@@ -211,20 +453,81 @@ function openSeatModal(seatNum) {
   document.getElementById("modalSeatNum").textContent = seatNum;
   const input = document.getElementById("nameInput");
 
-  if (seats[seatNum]) {
-    if (seats[seatNum].playerId === playerId) {
-      input.value = seats[seatNum].name;
-    } else {
-      input.value = "";
-      input.placeholder = `Currently: ${seats[seatNum].name}`;
-    }
+  // Determine initial state
+  let existing = null;
+  if (seats[seatNum]?.playerId === playerId) {
+    existing = seats[seatNum];
+  } else if (mySeat && seats[mySeat]?.playerId === playerId) {
+    existing = seats[mySeat]; // moving from another seat — keep my name/avatar
+  }
+
+  if (existing) {
+    input.value = existing.name;
+    input.placeholder = "Your name...";
+    currentAvatar = existing.avatar ? { ...existing.avatar } : randomAvatar();
+  } else if (seats[seatNum]) {
+    input.value = "";
+    input.placeholder = `Currently: ${seats[seatNum].name}`;
+    currentAvatar = randomAvatar();
   } else {
     input.value = "";
     input.placeholder = "Your name...";
+    currentAvatar = randomAvatar();
   }
+
+  renderAvatarPreview();
+  renderCustomizer();
 
   document.getElementById("seatModal").classList.add("open");
   setTimeout(() => input.focus(), 100);
+}
+
+function renderAvatarPreview() {
+  const el = document.getElementById("avatarPreview");
+  if (el) el.innerHTML = buildAvatarSVG(currentAvatar);
+}
+
+function renderCustomizer() {
+  const labels = {
+    skin:      "Skin",
+    hair:      "Hair",
+    hairColor: "Hair Color",
+    hat:       "Hat",
+    glasses:   "Glasses",
+    mouth:     "Mouth",
+    lipColor:  "Lip Color",
+  };
+  const wrap = document.getElementById("customizer");
+  if (!wrap) return;
+
+  wrap.innerHTML = AVATAR_FEATURES.map(feat => {
+    const opt = getOption(feat, currentAvatar[feat]);
+    const swatch = (feat === "skin" || feat === "hairColor" || feat === "lipColor")
+      ? `<span class="cust-swatch" style="background:${opt.fill}"></span>` : "";
+    return `
+      <div class="cust-row" data-feat="${feat}">
+        <span class="cust-label">${labels[feat]}</span>
+        <button type="button" class="cust-btn cust-prev" aria-label="Previous">&#9664;</button>
+        <span class="cust-value">${swatch}${opt.label}</span>
+        <button type="button" class="cust-btn cust-next" aria-label="Next">&#9654;</button>
+      </div>`;
+  }).join("");
+
+  wrap.querySelectorAll(".cust-prev, .cust-next").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".cust-row");
+      const feat = row.dataset.feat;
+      const options = AVATAR_OPTIONS[feat];
+      const idx = options.findIndex(o => o.id === currentAvatar[feat]);
+      const dir = btn.classList.contains("cust-next") ? 1 : -1;
+      const next = options[(idx + dir + options.length) % options.length];
+      currentAvatar[feat] = next.id;
+      const swatch = (feat === "skin" || feat === "hairColor" || feat === "lipColor")
+        ? `<span class="cust-swatch" style="background:${next.fill}"></span>` : "";
+      row.querySelector(".cust-value").innerHTML = `${swatch}${next.label}`;
+      renderAvatarPreview();
+    });
+  });
 }
 
 function closeSeatModal() {
@@ -243,7 +546,8 @@ async function confirmSeat() {
 
   const previousSeat = mySeat && mySeat !== pendingSeat ? mySeat : 0;
   const cards = [drawCard(), drawCard()];
-  const newEntry = { name, cards, playerId, claimedAt: Date.now() };
+  const avatar = { ...currentAvatar };
+  const newEntry = { name, cards, avatar, playerId, claimedAt: Date.now() };
 
   // Optimistic local update
   if (previousSeat) delete seats[previousSeat];
@@ -262,6 +566,7 @@ async function confirmSeat() {
         seatNum: claimedSeat,
         name,
         cards,
+        avatar,
         playerId,
         previousSeat: previousSeat || undefined,
       });
@@ -448,9 +753,11 @@ function showShowdown() {
   const winnerName = document.getElementById("winnerName");
   const winnerCards = document.getElementById("winnerCards");
   const winnerUsing = document.getElementById("winnerUsing");
+  const winnerAvatar = document.getElementById("winnerAvatar");
   const listEl = document.getElementById("showdownList");
 
   box.classList.remove("royal", "premium");
+  winnerAvatar.innerHTML = "";
 
   // If no players are seated, show the board's best hand
   if (players.length === 0) {
@@ -482,18 +789,21 @@ function showShowdown() {
   winnerName.textContent = ties.length > 1
     ? `Split pot: ${ties.map(t => `${t.name} (Seat ${t.seatNum})`).join(", ")}`
     : `${top.name} — Seat ${top.seatNum}`;
+  if (top.avatar) winnerAvatar.innerHTML = buildAvatarSVG(top.avatar);
   renderShowdownCards(winnerCards, top.best.cards);
   winnerUsing.textContent = `Using ${countHoleCardsUsed(top)} of ${top.name}'s hole cards`;
 
   // Other players list
   const others = evaluated.slice(ties.length);
-  listEl.innerHTML = others.map((p, i) => `
-    <li class="showdown-item">
-      <span class="showdown-rank">#${i + 1 + ties.length}</span>
-      <span class="showdown-name">${escapeHTML(p.name)} <span style="opacity:0.55;font-size:0.78em">· Seat ${p.seatNum}</span></span>
-      <span class="showdown-hand">${escapeHTML(p.best.name)}</span>
-    </li>
-  `).join("");
+  listEl.innerHTML = others.map((p, i) => {
+    const av = p.avatar ? buildAvatarSVG(p.avatar) : `<span class="showdown-rank">${p.seatNum}</span>`;
+    return `
+      <li class="showdown-item">
+        <span class="showdown-item-avatar">${av}</span>
+        <span class="showdown-name">${escapeHTML(p.name)} <span style="opacity:0.55;font-size:0.78em">· Seat ${p.seatNum}</span></span>
+        <span class="showdown-hand">${escapeHTML(p.best.name)}</span>
+      </li>`;
+  }).join("");
 
   if (top.best.rank === 9) box.classList.add("royal");
   else if (top.best.rank >= 6) box.classList.add("premium");
@@ -814,6 +1124,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("confirmBtn").addEventListener("click", confirmSeat);
   document.getElementById("cancelBtn").addEventListener("click", closeSeatModal);
+  document.getElementById("randomizeBtn").addEventListener("click", () => {
+    currentAvatar = randomAvatar();
+    renderAvatarPreview();
+    renderCustomizer();
+  });
   document.getElementById("nameInput").addEventListener("keydown", e => {
     if (e.key === "Enter") confirmSeat();
     if (e.key === "Escape") closeSeatModal();

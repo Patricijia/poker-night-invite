@@ -13,7 +13,7 @@ export default async (req) => {
 
     if (req.method === "POST") {
       const body = await req.json();
-      const { seatNum, name, cards, playerId, previousSeat } = body || {};
+      const { seatNum, name, cards, avatar, playerId, previousSeat } = body || {};
 
       if (!seatNum || !name || !Array.isArray(cards) || !playerId) {
         return new Response("Bad request", { status: 400, headers: corsHeaders() });
@@ -32,6 +32,7 @@ export default async (req) => {
       seats[seatNum] = {
         name: String(name).slice(0, 40),
         cards,
+        avatar: avatar && typeof avatar === "object" ? avatar : null,
         playerId,
         claimedAt: Date.now(),
       };
