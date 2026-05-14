@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Poker Night — Birthday Invite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="bg-fx">
+  <div class="vignette"></div>
+  <div class="suits-bg">
+    <span>&spades;</span><span>&hearts;</span><span>&clubs;</span><span>&diams;</span>
+    <span>&spades;</span><span>&hearts;</span><span>&clubs;</span><span>&diams;</span>
+    <span>&spades;</span><span>&hearts;</span><span>&clubs;</span><span>&diams;</span>
+  </div>
+</div>
+
+<svg class="balloon-defs" width="0" height="0" aria-hidden="true">
+  <defs>
+    <radialGradient id="grad-balloon-red" cx="32%" cy="26%" r="62%">
+      <stop offset="0%"  stop-color="#ffd0d8"/>
+      <stop offset="25%" stop-color="#ff506a"/>
+      <stop offset="65%" stop-color="#c8102e"/>
+      <stop offset="100%" stop-color="#4a0510"/>
+    </radialGradient>
+    <radialGradient id="grad-balloon-black" cx="32%" cy="26%" r="62%">
+      <stop offset="0%"  stop-color="#7a7a7a"/>
+      <stop offset="25%" stop-color="#2e2e2e"/>
+      <stop offset="65%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#000"/>
+    </radialGradient>
+    <radialGradient id="grad-balloon-highlight" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="rgba(255,255,255,0.85)"/>
+      <stop offset="60%" stop-color="rgba(255,255,255,0.25)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+  </defs>
+</svg>
+<div class="balloons" id="balloons" aria-hidden="true"></div>
+
+<header class="hero">
+  <div class="chip-stack">
+    <div class="chip chip-red"></div>
+    <div class="chip chip-black"></div>
+    <div class="chip chip-gold"></div>
+  </div>
+  <p class="kicker">You are cordially invited to</p>
+  <h1 class="title">
+    <span class="line-1">Poker</span>
+    <span class="line-amp">&amp;</span>
+    <span class="line-2">Birthday Night</span>
+  </h1>
+  <div class="details">
+    <div class="detail">
+      <span class="detail-label">Date</span>
+      <span class="detail-value">May 15, 2026</span>
+    </div>
+    <div class="divider">&spades;</div>
+    <div class="detail">
+      <span class="detail-label">Time</span>
+      <span class="detail-value">7:00 PM</span>
+    </div>
+    <div class="divider">&diams;</div>
+    <div class="detail">
+      <span class="detail-label">Venue</span>
+      <span class="detail-value">West Edge Apartments</span>
+    </div>
+  </div>
+  <p class="dresscode">Black tie optional &middot; Bring your poker face</p>
+  <a href="#table" class="cta">Claim Your Seat &darr;</a>
+</header>
+
+<main id="table" class="table-section">
+  <h2 class="section-title">Take a Seat at the Table</h2>
+  <p class="section-sub">Tap an open chair to claim it. Deal yourself a hand — your luck for the night.</p>
+
+  <div class="poker-table-wrap">
+    <div class="poker-table">
+      <div class="felt">
+        <div class="table-rail"></div>
+        <div class="table-center">
+          <div class="dealer-card-row" id="dealerCards">
+            <div class="card community" data-idx="0"><div class="card-back"></div></div>
+            <div class="card community" data-idx="1"><div class="card-back"></div></div>
+            <div class="card community" data-idx="2"><div class="card-back"></div></div>
+            <div class="card community" data-idx="3"><div class="card-back"></div></div>
+            <div class="card community" data-idx="4"><div class="card-back"></div></div>
+          </div>
+          <button id="dealBtn" class="deal-btn">Deal the Flop</button>
+          <div class="pot">
+            <div class="pot-label">The Pot</div>
+            <div class="pot-chips">
+              <div class="mini-chip mc-red"></div>
+              <div class="mini-chip mc-black"></div>
+              <div class="mini-chip mc-gold"></div>
+              <div class="mini-chip mc-red"></div>
+              <div class="mini-chip mc-gold"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 seats around the table -->
+        <div class="seat" data-seat="1" style="--angle: 0deg;">
+          <button class="chair" aria-label="Claim seat 1">
+            <span class="chair-num">1</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="2" style="--angle: 45deg;">
+          <button class="chair" aria-label="Claim seat 2">
+            <span class="chair-num">2</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="3" style="--angle: 90deg;">
+          <button class="chair" aria-label="Claim seat 3">
+            <span class="chair-num">3</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="4" style="--angle: 135deg;">
+          <button class="chair" aria-label="Claim seat 4">
+            <span class="chair-num">4</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="5" style="--angle: 180deg;">
+          <button class="chair" aria-label="Claim seat 5">
+            <span class="chair-num">5</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="6" style="--angle: 225deg;">
+          <button class="chair" aria-label="Claim seat 6">
+            <span class="chair-num">6</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="7" style="--angle: 270deg;">
+          <button class="chair" aria-label="Claim seat 7">
+            <span class="chair-num">7</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+        <div class="seat" data-seat="8" style="--angle: 315deg;">
+          <button class="chair" aria-label="Claim seat 8">
+            <span class="chair-num">8</span>
+            <span class="chair-name">Open Seat</span>
+          </button>
+          <div class="hole-cards">
+            <div class="hole-card"><div class="card-back"></div></div>
+            <div class="hole-card"><div class="card-back"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="dot dot-open"></span> Open</span>
+    <span class="legend-item"><span class="dot dot-taken"></span> Claimed</span>
+    <span class="legend-item"><span class="dot dot-mine"></span> Your Seat</span>
+    <span class="legend-item sync-indicator" id="syncIndicator" title="Sync status">
+      <span class="sync-dot"></span><span class="sync-label">Live</span>
+    </span>
+  </div>
+
+  <div class="roster-wrap">
+    <h3 class="roster-title">Players at the Table</h3>
+    <p class="roster-empty" id="rosterEmpty">No players yet &mdash; be the first to claim a seat.</p>
+    <ol class="roster" id="roster"></ol>
+  </div>
+</main>
+
+<section class="footer-info">
+  <h3>House Rules</h3>
+  <ul>
+    <li>&spades; Chips &amp; cards provided — bring nothing but your luck</li>
+    <li>&hearts; Drinks &amp; snacks on the house</li>
+    <li>&clubs; Cash games friendly to all skill levels</li>
+    <li>&diams; RSVP by claiming a seat above</li>
+  </ul>
+  <p class="signoff">See you at the table.</p>
+</section>
+
+<!-- Seat claim modal -->
+<div class="modal" id="seatModal" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">Claim Seat <span id="modalSeatNum">1</span></h3>
+    <p class="modal-sub">Enter your name and we'll deal you in.</p>
+    <input type="text" id="nameInput" class="name-input" placeholder="Your name..." maxlength="20" />
+    <div class="modal-actions">
+      <button id="cancelBtn" class="btn btn-ghost">Cancel</button>
+      <button id="confirmBtn" class="btn btn-gold">Deal Me In</button>
+    </div>
+  </div>
+</div>
+
+<!-- Showdown modal -->
+<div class="modal" id="showdownModal" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box showdown-box" id="showdownBox">
+    <div class="showdown-banner" id="showdownBanner">The Showdown</div>
+    <h3 class="winner-hand" id="winnerHand">—</h3>
+    <p class="winner-name" id="winnerName">—</p>
+    <div class="winner-cards" id="winnerCards"></div>
+    <p class="winner-using" id="winnerUsing"></p>
+    <ol class="showdown-list" id="showdownList"></ol>
+    <div class="modal-actions">
+      <button id="showdownClose" class="btn btn-gold">Settle Up</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reveal modal -->
+<div class="modal" id="revealModal" aria-hidden="true">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box reveal-box">
+    <h3 class="modal-title">Your Hand</h3>
+    <p class="modal-sub" id="revealName">Player</p>
+    <div class="reveal-cards" id="revealCards"></div>
+    <p class="hand-rank" id="handRank">&spades;</p>
+    <div class="modal-actions">
+      <button id="revealClose" class="btn btn-gold">Hold 'Em</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
