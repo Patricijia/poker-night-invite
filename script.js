@@ -365,17 +365,49 @@ function saveLocal() {
 
 // ----- API client -----
 async function apiGetSeats() {
-  const res = await fetch(API_URL, { method: "GET" });
-  if (!res.ok) throw new Error(`GET ${res.status}`);
+  const res = await fetch(API_URL, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("GET /api/seats failed:", res.status, text);
+    throw new Error(`GET ${res.status}: ${text}`);
+  }
+
   return await res.json();
 }
+
 async function apiPostSeat(payload) {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`POST ${res.status}`);
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("POST /api/seats failed:", res.status, text);
+    throw new Error(`POST ${res.status}: ${text}`);
+  }
+
+  return await res.json();
+}
+
+async function apiDeleteSeat(payload) {
+  const res = await fetch(API_URL, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("DELETE /api/seats failed:", res.status, text);
+    throw new Error(`DELETE ${res.status}: ${text}`);
+  }
+
   return await res.json();
 }
 
@@ -481,7 +513,9 @@ function escapeHTML(s) {
 
 // ----- Sync -----
 async function syncFromServer() {
-  if (!useRemote || modalOpen || pendingSave) return;
+  // Keep retrying remote sync. If the first request fails, we do not want
+  // the app to be permanently stuck in local-only mode.
+  if (modalOpen || pendingSave) return;
   try {
     const remote = await apiGetSeats();
     const localJson = JSON.stringify(seats);
@@ -495,12 +529,10 @@ async function syncFromServer() {
       renderSeats();
     }
     setSyncStatus(true);
-  } catch {
+  } catch (err) {
+    console.error("Remote sync failed; keeping local view and retrying:", err);
     useRemote = false;
     setSyncStatus(false);
-    // Switch to local-only mode
-    seats = loadLocal();
-    renderSeats();
   }
 }
 
@@ -626,9 +658,10 @@ async function confirmSeat() {
   closeSeatModal();
 
   // Push to server (pause polling so it can't overwrite our optimistic state mid-flight)
-  if (useRemote) {
-    pendingSave = true;
-    try {
+  // Always try to save remotely. If the site briefly went offline earlier,
+  // this lets it recover instead of staying local-only forever.
+  pendingSave = true;
+  try {
       const updated = await apiPostSeat({
         seatNum: claimedSeat,
         name,
@@ -643,15 +676,15 @@ async function confirmSeat() {
       mySeat = mineEntry ? parseInt(mineEntry[0], 10) : claimedSeat;
       saveLocal();
       renderSeats();
+      useRemote = true;
       setSyncStatus(true);
     } catch (err) {
-      console.warn("Save failed, falling back to local-only", err);
+      console.warn("Remote save failed; seat is saved only on this device until sync recovers:", err);
       useRemote = false;
       setSyncStatus(false);
     } finally {
       pendingSave = false;
     }
-  }
 
   setTimeout(() => showReveal(claimedSeat), 900);
 }
@@ -815,6 +848,7 @@ function showShowdown() {
     name: d.name,
     cards: d.cards,
     playerId: d.playerId,
+    avatar: d.avatar,
   }));
 
   const box = document.getElementById("showdownBox");
@@ -1169,15 +1203,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderSeats();
     setSyncStatus(true);
     startPolling();
-  } catch {
+  } catch (err) {
+    console.error("Initial remote load failed; using local view and retrying sync:", err);
     useRemote = false;
     setSyncStatus(false);
   }
+  startPolling();
 
   // Pause polling when tab hidden, resume when visible
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) stopPolling();
-    else if (useRemote) { syncFromServer(); startPolling(); }
+    else { syncFromServer(); startPolling(); }
   });
 
   document.querySelectorAll(".seat .chair").forEach(btn => {

@@ -10,3 +10,14 @@
   to = "/.netlify/functions/seats"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/debug"
+  to = "/.netlify/functions/debug"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
