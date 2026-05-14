@@ -42,10 +42,16 @@ const AVATAR_OPTIONS = {
     { id: "cowboy",  label: "Cowboy" },
   ],
   glasses: [
-    { id: "none",        label: "None" },
-    { id: "sunglasses",  label: "Sunglasses" },
-    { id: "round",       label: "Round" },
-    { id: "aviator",     label: "Aviator" },
+    { id: "none",          label: "None" },
+    { id: "sunglasses",    label: "Classic Black" },
+    { id: "wayfarer",      label: "Wayfarer" },
+    { id: "blackround",    label: "Black Round" },
+    { id: "round",         label: "Gold Round" },
+    { id: "blackaviator",  label: "Black Aviator" },
+    { id: "aviator",       label: "Gold Aviator" },
+    { id: "mirror",        label: "Mirrored Gold" },
+    { id: "wrap",          label: "Wraparound" },
+    { id: "blackoversize", label: "Oversized Black" },
   ],
   mouth: [
     { id: "smile",   label: "Smile" },
@@ -143,8 +149,13 @@ function renderHairFront(hair, color) {
   }
 }
 
+const OPAQUE_SHADES = new Set([
+  "sunglasses", "wayfarer", "blackround", "blackaviator",
+  "mirror", "wrap", "blackoversize",
+]);
+
 function renderEyes(glasses) {
-  if (glasses === "sunglasses") return "";
+  if (OPAQUE_SHADES.has(glasses)) return "";
   return `
     <g class="avatar-eyes">
       <ellipse cx="40" cy="52" rx="2.4" ry="3.2" fill="#1a1a1a"/>
@@ -178,12 +189,20 @@ function renderGlasses(glasses) {
   switch (glasses) {
     case "sunglasses":
       return `
-        <g class="avatar-shades">
+        <g>
           <rect x="28" y="45" width="20" height="11" rx="3" fill="#0a0a0a" stroke="#d4af37" stroke-width="1"/>
           <rect x="52" y="45" width="20" height="11" rx="3" fill="#0a0a0a" stroke="#d4af37" stroke-width="1"/>
           <line x1="48" y1="50.5" x2="52" y2="50.5" stroke="#d4af37" stroke-width="1.5"/>
-          <rect x="32" y="46.5" width="4" height="2" fill="#fff" opacity="0.4"/>
-          <rect x="56" y="46.5" width="4" height="2" fill="#fff" opacity="0.4"/>
+          <rect x="32" y="46.5" width="4" height="2" fill="#fff" opacity="0.35"/>
+          <rect x="56" y="46.5" width="4" height="2" fill="#fff" opacity="0.35"/>
+        </g>`;
+    case "wayfarer":
+      return `
+        <g>
+          <path d="M 24 43 L 48 43 Q 50 43 50 45 L 50 54 Q 50 57 47 57 L 31 57 Q 24 57 24 50 Z" fill="#0a0a0a"/>
+          <path d="M 52 43 L 76 43 Q 76 50 76 50 Q 76 57 69 57 L 53 57 Q 50 57 50 54 L 50 45 Q 50 43 52 43 Z" fill="#0a0a0a"/>
+          <rect x="29" y="45" width="6" height="2.5" fill="#fff" opacity="0.3"/>
+          <rect x="55" y="45" width="6" height="2.5" fill="#fff" opacity="0.3"/>
         </g>`;
     case "round":
       return `
@@ -192,12 +211,58 @@ function renderGlasses(glasses) {
           <circle cx="60" cy="52" r="7" fill="rgba(255,255,255,0.12)" stroke="#d4af37" stroke-width="1.5"/>
           <line x1="47" y1="52" x2="53" y2="52" stroke="#d4af37" stroke-width="1.5"/>
         </g>`;
+    case "blackround":
+      return `
+        <g>
+          <circle cx="40" cy="52" r="7.5" fill="#0a0a0a" stroke="#000" stroke-width="0.8"/>
+          <circle cx="60" cy="52" r="7.5" fill="#0a0a0a" stroke="#000" stroke-width="0.8"/>
+          <line x1="47.5" y1="52" x2="52.5" y2="52" stroke="#0a0a0a" stroke-width="2"/>
+          <ellipse cx="38" cy="50" rx="2" ry="1.2" fill="#fff" opacity="0.28"/>
+          <ellipse cx="58" cy="50" rx="2" ry="1.2" fill="#fff" opacity="0.28"/>
+        </g>`;
     case "aviator":
       return `
         <g>
           <path d="M 33 48 Q 32 58 41 58 Q 49 58 48 48 Z" fill="rgba(0,0,0,0.55)" stroke="#d4af37" stroke-width="1"/>
           <path d="M 52 48 Q 51 58 59 58 Q 68 58 67 48 Z" fill="rgba(0,0,0,0.55)" stroke="#d4af37" stroke-width="1"/>
           <line x1="48" y1="50" x2="52" y2="50" stroke="#d4af37" stroke-width="1.5"/>
+        </g>`;
+    case "blackaviator":
+      return `
+        <g>
+          <path d="M 32 47 Q 31 59 41 59 Q 50 59 49 47 Z" fill="#0a0a0a"/>
+          <path d="M 51 47 Q 50 59 59 59 Q 69 59 68 47 Z" fill="#0a0a0a"/>
+          <line x1="49" y1="50" x2="51" y2="50" stroke="#0a0a0a" stroke-width="2"/>
+          <ellipse cx="37" cy="50" rx="2.2" ry="1.2" fill="#fff" opacity="0.3"/>
+          <ellipse cx="58" cy="50" rx="2.2" ry="1.2" fill="#fff" opacity="0.3"/>
+        </g>`;
+    case "mirror":
+      return `
+        <g>
+          <rect x="27" y="44" width="22" height="12" rx="3" fill="#0a0a0a"/>
+          <rect x="51" y="44" width="22" height="12" rx="3" fill="#0a0a0a"/>
+          <rect x="28.5" y="45.5" width="19" height="9" rx="2" fill="#d4af37"/>
+          <rect x="52.5" y="45.5" width="19" height="9" rx="2" fill="#d4af37"/>
+          <rect x="30" y="46.5" width="7" height="2.5" fill="#fff" opacity="0.7"/>
+          <rect x="54" y="46.5" width="7" height="2.5" fill="#fff" opacity="0.7"/>
+          <line x1="49" y1="50" x2="51" y2="50" stroke="#0a0a0a" stroke-width="2"/>
+        </g>`;
+    case "wrap":
+      return `
+        <g>
+          <path d="M 21 47 Q 21 57 32 58 L 68 58 Q 79 57 79 47 Q 79 43 71 43 L 29 43 Q 21 43 21 47 Z" fill="#0a0a0a"/>
+          <path d="M 23 47 Q 23 54 33 55 L 67 55 Q 77 54 77 47" stroke="#fff" stroke-width="0.6" fill="none" opacity="0.25"/>
+          <ellipse cx="35" cy="49" rx="7" ry="2" fill="#fff" opacity="0.18"/>
+          <ellipse cx="60" cy="49" rx="9" ry="2" fill="#fff" opacity="0.18"/>
+        </g>`;
+    case "blackoversize":
+      return `
+        <g>
+          <rect x="22" y="42" width="26" height="16" rx="5" fill="#0a0a0a" stroke="#000" stroke-width="0.6"/>
+          <rect x="52" y="42" width="26" height="16" rx="5" fill="#0a0a0a" stroke="#000" stroke-width="0.6"/>
+          <line x1="48" y1="49" x2="52" y2="49" stroke="#0a0a0a" stroke-width="2.5"/>
+          <ellipse cx="30" cy="46" rx="4" ry="1.6" fill="#fff" opacity="0.3"/>
+          <ellipse cx="60" cy="46" rx="4" ry="1.6" fill="#fff" opacity="0.3"/>
         </g>`;
     default:
       return "";
